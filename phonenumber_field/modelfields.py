@@ -4,9 +4,8 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from phonenumber_field.validators import validate_international_phonenumber
 from phonenumber_field import formfields
-from phonenumber_field.phonenumber import PhoneNumber, to_python
-from phonenumbers.phonenumberutil import NumberParseException
-import phonenumbers
+from phonenumber_field.phonenumber import PhoneNumber
+import widgets
 
 
 class PhoneNumberDescriptor(object):
@@ -34,10 +33,10 @@ class PhoneNumberDescriptor(object):
         return instance.__dict__[self.field.name]
 
     def __set__(self, instance, value):
-        instance.__dict__[self.field.name] = to_python(value)
+        instance.__dict__[self.field.name] = PhoneNumber.from_field_value(value)
 
 
-class PhoneNumberField(models.Field):
+class PhoneNumberField(models.CharField):
     attr_class = PhoneNumber
     descriptor_class = PhoneNumberDescriptor
     default_validators = [validate_international_phonenumber]
@@ -56,7 +55,7 @@ class PhoneNumberField(models.Field):
         "Returns field's value prepared for saving into a database."
         if value is None:
             return None
-        value = to_python(value)
+        value = PhoneNumber.from_field_value(value)
         if isinstance(value, basestring):
             # it is an invalid phone number
             return value
@@ -73,6 +72,12 @@ class PhoneNumberField(models.Field):
         defaults.update(kwargs)
         return super(PhoneNumberField, self).formfield(**defaults)
 
+class InternationalPhoneNumberField(PhoneNumberField):
+    def formfield(self, **kwargs):
+        kwargs['form_class'] = formfields.InternationalPhoneNumberField
+        kwargs['widget'] = widgets.InternationalPhoneNumberWidget
+        return super(InternationalPhoneNumberField, self).formfield(**kwargs)
+
 try:
     from south.modelsinspector import add_introspection_rules
     add_introspection_rules([
@@ -82,5 +87,12 @@ try:
             {},
         ),
     ], ["^phonenumber_field\.modelfields\.PhoneNumberField"])
+    add_introspection_rules([
+        (
+            [InternationalPhoneNumberField],
+            [],
+            {},
+        ),
+    ], ["^phonenumber_field\.modelfields\.InternationalPhoneNumberField"])
 except ImportError:
     pass

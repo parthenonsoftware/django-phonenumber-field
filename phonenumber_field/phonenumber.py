@@ -15,6 +15,20 @@ class PhoneNumber(phonenumbers.phonenumber.PhoneNumber):
         phonenumbers.parse(number=phone_number, region=None, keep_raw_input=True, numobj=phone_number_obj)
         return phone_number_obj
 
+    @classmethod
+    def from_field_value(cls, value):
+        if value in validators.EMPTY_VALUES:  # None or ''
+            phone_number = None
+        elif value and isinstance(value, basestring):
+            try:
+                phone_number = PhoneNumber.from_string(phone_number=value)
+            except NumberParseException, e:
+                # the string provided is not a valid PhoneNumber.
+                phone_number = PhoneNumber(raw_input=value)
+        elif isinstance(value, PhoneNumber):
+            phone_number = value
+        return phone_number
+
     def __str__(self):
         if self.is_valid():
             return self.as_e164
@@ -56,21 +70,3 @@ class PhoneNumber(phonenumbers.phonenumber.PhoneNumber):
 
     def __len__(self):
         return len(self.__unicode__())
-
-
-def to_python(value):
-    if value in validators.EMPTY_VALUES:  # None or ''
-        phone_number = None
-    elif value and isinstance(value, basestring):
-        try:
-            phone_number = PhoneNumber.from_string(phone_number=value)
-        except NumberParseException, e:
-            # the string provided is not a valid PhoneNumber.
-            phone_number = PhoneNumber(raw_input=value)
-    elif isinstance(value, phonenumbers.phonenumber.PhoneNumber) and \
-         not isinstance(value, PhoneNumber):
-        phone_number = self.field.attr_class()
-        phone_number.merge_from(value)
-    elif isinstance(value, PhoneNumber):
-        phone_number = value
-    return phone_number
