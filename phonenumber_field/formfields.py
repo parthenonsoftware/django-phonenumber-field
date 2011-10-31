@@ -40,11 +40,9 @@ class InternationalPhoneNumberField(MultiValueField):
         super(InternationalPhoneNumberField, self).__init__(fields, *args, **kwargs)
 
     def compress(self, data_list):
-        if not data_list[0] or not data_list[1]:
+        if not data_list or len(data_list) < 2 or not data_list[0] or not data_list[1]:
             return None
-        if data_list:
-            return '+' + self.phone_clean.sub('', data_list[0]) + " " + self.phone_clean.sub('', data_list[1])
-        return None
+        return '+%s %s' % (self.phone_clean.sub('', data_list[0]), self.phone_clean.sub('', data_list[1]))
 
     def to_python(self, value):
         phone_number = PhoneNumber.from_field_value(value)
