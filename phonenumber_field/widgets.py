@@ -2,7 +2,7 @@
 import re
 import phonenumbers
 
-from django.forms.widgets import MultiWidget, Select, TextInput, MultipleHiddenInput
+from django.forms.widgets import MultiWidget, Select, Input, MultipleHiddenInput
 from django.forms.util import flatatt
 from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
@@ -11,13 +11,17 @@ from country_codes import COUNTRY_CODES
 from phonenumber import PhoneNumber
 
 
+class TelephoneInput(Input):
+    input_type = 'tel'
+
+
 class InternationalPhoneNumberWidget(MultiWidget):
     phone_clean = re.compile("[^0-9]");
 
     def __init__(self, attrs = None):
         widgets = (
                     Select(choices = self.get_choices()),
-                    TextInput(),
+                    TelephoneInput(),
                 )
         super(InternationalPhoneNumberWidget, self).__init__(widgets, attrs)
 

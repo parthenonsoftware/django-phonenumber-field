@@ -7,9 +7,10 @@ from django.core.exceptions import ValidationError
 from phonenumber_field.validators import validate_international_phonenumber
 from phonenumber_field.phonenumber import PhoneNumber
 
-from widgets import InternationalPhoneNumberWidget, HiddenInternationalPhoneNumberWidget
+from widgets import InternationalPhoneNumberWidget, HiddenInternationalPhoneNumberWidget, TelephoneInput
 
 class PhoneNumberField(CharField):
+    widget = TelephoneInput
     default_error_messages = {
         'invalid': _(u'Enter a valid phone number ("e.g +411234567").'),
     }
@@ -20,6 +21,7 @@ class PhoneNumberField(CharField):
         if phone_number and not phone_number.is_valid():
             raise ValidationError(self.error_messages['invalid'])
         return phone_number
+
 
 class InternationalPhoneNumberField(MultiValueField):
     widget = InternationalPhoneNumberWidget
