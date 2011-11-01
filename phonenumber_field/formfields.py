@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from phonenumber_field.validators import validate_international_phonenumber
 from phonenumber_field.phonenumber import PhoneNumber
 
-from widgets import InternationalPhoneNumberWidget
+from widgets import InternationalPhoneNumberWidget, HiddenInternationalPhoneNumberWidget
 
 class PhoneNumberField(CharField):
     default_error_messages = {
@@ -23,6 +23,7 @@ class PhoneNumberField(CharField):
 
 class InternationalPhoneNumberField(MultiValueField):
     widget = InternationalPhoneNumberWidget
+    hidden_widget = HiddenInternationalPhoneNumberWidget
 
     phone_clean = re.compile("[^0-9]");
 
