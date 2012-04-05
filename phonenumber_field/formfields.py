@@ -7,9 +7,10 @@ from django.core.exceptions import ValidationError
 from phonenumber_field.validators import validate_international_phonenumber
 from phonenumber_field.phonenumber import PhoneNumber
 
-from widgets import InternationalPhoneNumberWidget
+from widgets import InternationalPhoneNumberWidget, HiddenInternationalPhoneNumberWidget, TelephoneInput
 
 class PhoneNumberField(CharField):
+    widget = TelephoneInput
     default_error_messages = {
         'invalid': _(u'Enter a valid phone number ("e.g +411234567").'),
     }
@@ -21,8 +22,10 @@ class PhoneNumberField(CharField):
             raise ValidationError(self.error_messages['invalid'])
         return phone_number
 
+
 class InternationalPhoneNumberField(MultiValueField):
     widget = InternationalPhoneNumberWidget
+    hidden_widget = HiddenInternationalPhoneNumberWidget
 
     phone_clean = re.compile("[^0-9]");
 
@@ -40,11 +43,9 @@ class InternationalPhoneNumberField(MultiValueField):
         super(InternationalPhoneNumberField, self).__init__(fields, *args, **kwargs)
 
     def compress(self, data_list):
-        if not data_list[0] or not data_list[1]:
+        if not data_list or len(data_list) < 2 or not data_list[0] or not data_list[1]:
             return None
-        if data_list:
-            return '+' + self.phone_clean.sub('', data_list[0]) + " " + self.phone_clean.sub('', data_list[1])
-        return None
+        return '+%s %s' % (self.phone_clean.sub('', data_list[0]), self.phone_clean.sub('', data_list[1]))
 
     def to_python(self, value):
         phone_number = PhoneNumber.from_field_value(value)
